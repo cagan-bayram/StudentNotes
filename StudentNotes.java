@@ -1,8 +1,8 @@
+import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.*;
 
 public class StudentNotes extends JFrame {
     private JTextArea noteArea;
@@ -11,18 +11,31 @@ public class StudentNotes extends JFrame {
     private DefaultListModel<String> listModel;
 
     public StudentNotes() {
-        setTitle("StudentNotes");
-        setSize(400, 300);
+        // Set the FlatLaf Dark theme
+        try {
+            UIManager.setLookAndFeel(new FlatDarkLaf());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        setTitle("Student Notes");
+        setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         noteArea = new JTextArea();
+        noteArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        noteArea.setBackground(new Color(43, 43, 43));
+        noteArea.setForeground(Color.WHITE);
+
         saveButton = new JButton("Save Note");
         viewButton = new JButton("View Notes");
         deleteButton = new JButton("Delete Note");
 
         listModel = new DefaultListModel<>();
         noteList = new JList<>(listModel);
+        noteList.setBackground(new Color(43, 43, 43));
+        noteList.setForeground(Color.WHITE);
 
         saveButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -47,12 +60,13 @@ public class StudentNotes extends JFrame {
         panel.add(new JScrollPane(noteArea), BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.add(saveButton);
         buttonPanel.add(viewButton);
         buttonPanel.add(deleteButton);
 
-        panel.add(buttonPanel, BorderLayout.SOUTH);
-        panel.add(new JScrollPane(noteList), BorderLayout.EAST);
+        panel.add(buttonPanel, BorderLayout.NORTH);
+        panel.add(new JScrollPane(noteList), BorderLayout.WEST);
 
         add(panel);
     }
@@ -89,16 +103,21 @@ public class StudentNotes extends JFrame {
         int selectedIndex = noteList.getSelectedIndex();
         if (selectedIndex != -1) {
             listModel.remove(selectedIndex);
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter("notes.txt"))) {
-                for (int i = 0; i < listModel.size(); i++) {
-                    writer.write(listModel.getElementAt(i));
-                    writer.newLine();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            saveAllNotes();
+            JOptionPane.showMessageDialog(this, "Note deleted!");
         } else {
             JOptionPane.showMessageDialog(this, "No note selected!");
+        }
+    }
+
+    private void saveAllNotes() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("notes.txt"))) {
+            for (int i = 0; i < listModel.size(); i++) {
+                writer.write(listModel.getElementAt(i));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
